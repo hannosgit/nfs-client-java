@@ -1,12 +1,12 @@
 /**
  * Copyright 2016-2018 Dell Inc. or its subsidiaries. All rights reserved.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
  * A copy of the License is located at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0.txt
- *
+ * <p>
  * or in the "license" file accompanying this file. This file is distributed
  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the License for the specific language governing
@@ -16,10 +16,9 @@ package com.emc.ecs.nfsclient.network;
 
 import com.emc.ecs.nfsclient.rpc.Xdr;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.channel.Channel;
 import org.apache.commons.lang3.NotImplementedException;
-import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
-import org.jboss.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,12 +27,14 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import static io.netty.buffer.Unpooled.wrappedBuffer;
+
 /**
  * RFC1831: RECORD MARKING STANDARD When RPC messages are passed on top of a
  * byte stream transport protocol (like TCP), it is necessary to delimit one
  * message from another in order to detect and possibly recover from protocol
  * errors. This is called record marking (RM).
- * 
+ *
  * @author seibed
  */
 public class RecordMarkingUtil {
@@ -68,7 +69,7 @@ public class RecordMarkingUtil {
 
     /**
      * Insert record marking into rpcRequest and then send to tcp stream.
-     * 
+     *
      * @param channel The Channel to use for sending.
      * @param rpcRequest The request to send.
      */
@@ -118,7 +119,7 @@ public class RecordMarkingUtil {
 
     /**
      * Remove record marking from the byte array and convert to an Xdr.
-     * 
+     *
      * @param bytes The byte array.
      * @return The Xdr.
      */
@@ -171,7 +172,7 @@ public class RecordMarkingUtil {
         outBuffers.add(0, recSizeBuf);
 
         ByteBuffer[] outArray = outBuffers.toArray(new ByteBuffer[outBuffers.size()]);
-        ChannelBuffer channelBuffer = ChannelBuffers.wrappedBuffer(outArray);
+        ByteBuf channelBuffer = wrappedBuffer(outArray);
         channel.write(channelBuffer);
     }
 

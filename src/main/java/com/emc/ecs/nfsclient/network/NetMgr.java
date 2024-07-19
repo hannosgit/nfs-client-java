@@ -17,8 +17,9 @@ package com.emc.ecs.nfsclient.network;
 import com.emc.ecs.nfsclient.rpc.RpcException;
 import com.emc.ecs.nfsclient.rpc.Xdr;
 
-import org.jboss.netty.channel.ChannelFactory;
-import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import io.netty.channel.ChannelFactory;
+import io.netty.channel.EventLoopGroup;
+
 
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -63,10 +64,10 @@ public class NetMgr {
      */
     private ConcurrentHashMap<InetSocketAddress, Connection> _privilegedConnectionMap = new ConcurrentHashMap<InetSocketAddress, Connection>();
 
-    /**
-     * Netty helper instance.
-     */
-    private ChannelFactory _factory = new NioClientSocketChannelFactory(newThreadPool(), newThreadPool());
+//    /**
+//     * Netty helper instance.
+//     */
+//    private EventLoopGroup _factory = new NioClientSocketChannelFactory(newThreadPool(), newThreadPool());
 
     /**
      * @return a thread pool instance using the proper factory to create daemon threads
@@ -151,15 +152,7 @@ public class NetMgr {
             connection.shutdown();
         }
 
-        _factory.releaseExternalResources();
+//        _factory.releaseExternalResources();
     }
 
-    /**
-     * Getter method for Factory access.
-     * 
-     * @return The factory.
-     */
-    public ChannelFactory getFactory() {
-        return _factory;
-    }
 }
