@@ -20,7 +20,6 @@ import com.emc.ecs.nfsclient.rpc.Xdr;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,53 +77,13 @@ public class ClientIOHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        super.channelActive(ctx);
-    }
-
-    @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        super.channelReadComplete(ctx);
-    }
-
-    @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        super.userEventTriggered(ctx, evt);
-    }
-
-    @Override
-    public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
-        super.channelWritabilityChanged(ctx);
-    }
-
-    /**
-     * Convenience method to standardize connection closing.We never try to
-     * reconnect the tcp connections. the new connection will be launched when
-     * new request is received. Reasons:
-     * <ol>
-     * <li>Portmap service will disconnect a tcp connection once it has been
-     * idle for a few seconds.</li>
-     * <li>Mounting service is listening to a temporary port, the port will
-     * change after nfs server restart.</li>
-     * <li>Even Nfs server may be listening to a temporary port.</li>
-     * </ol>
-     *
-     * @param messageStart A string used to start the log message.
-     * @param ctx
-     */
-    private void closeConnection(String messageStart, ChannelHandlerContext ctx) {
-        LOG.warn(messageStart + ": {}", ctx.channel().remoteAddress());
-        _connection.close();
-    }
-
-    @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         byte[] rpcResponse = (byte[]) msg;
         // remove marking
         Xdr x = RecordMarkingUtil.removeRecordMarking(rpcResponse);
         // remove the request from timeout manager map
         int xid = x.getXid();
-        _connection.notifySender(Integer.valueOf(xid), x);
+        _connection.notifySender(xid, x);
 
         super.channelRead(ctx, msg);
     }
@@ -148,6 +107,26 @@ public class ClientIOHandler extends ChannelInboundHandlerAdapter {
             ctx.channel().close();
         }
         super.exceptionCaught(ctx, cause);
+    }
+
+    /**
+     * Convenience method to standardize connection closing.We never try to
+     * reconnect the tcp connections. the new connection will be launched when
+     * new request is received. Reasons:
+     * <ol>
+     * <li>Portmap service will disconnect a tcp connection once it has been
+     * idle for a few seconds.</li>
+     * <li>Mounting service is listening to a temporary port, the port will
+     * change after nfs server restart.</li>
+     * <li>Even Nfs server may be listening to a temporary port.</li>
+     * </ol>
+     *
+     * @param messageStart A string used to start the log message.
+     * @param ctx
+     */
+    private void closeConnection(String messageStart, ChannelHandlerContext ctx) {
+        LOG.warn(messageStart + ": {}", ctx.channel().remoteAddress());
+        _connection.close();
     }
 
 }

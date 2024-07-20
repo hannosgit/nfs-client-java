@@ -21,9 +21,6 @@ import com.emc.ecs.nfsclient.rpc.Xdr;
 import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 /**
  * Singleton class to manage all Connection instances
@@ -54,41 +51,12 @@ public class NetMgr {
     /**
      * connection tracking map
      */
-    private ConcurrentHashMap<InetSocketAddress, Connection> _connectionMap = new ConcurrentHashMap<InetSocketAddress, Connection>();
+    private final ConcurrentHashMap<InetSocketAddress, Connection> _connectionMap = new ConcurrentHashMap<InetSocketAddress, Connection>();
 
     /**
      * privileged connection tracking map
      */
-    private ConcurrentHashMap<InetSocketAddress, Connection> _privilegedConnectionMap = new ConcurrentHashMap<InetSocketAddress, Connection>();
-
-//    /**
-//     * Netty helper instance.
-//     */
-//    private EventLoopGroup _factory = new NioClientSocketChannelFactory(newThreadPool(), newThreadPool());
-
-    /**
-     * @return a thread pool instance using the proper factory to create daemon threads
-     */
-    private static final ExecutorService newThreadPool() {
-        return Executors.newCachedThreadPool(getThreadFactory());
-    }
-
-    /**
-     * @return a thread factory that creates daemon threads
-     */
-    private static ThreadFactory getThreadFactory() {
-        return new ThreadFactory() {
-
-            @Override
-            public Thread newThread(Runnable r) {
-                Thread thread = new Thread(r);
-                thread.setDaemon(true);
-                return thread;
-            }
-
-        };
-
-    }
+    private final ConcurrentHashMap<InetSocketAddress, Connection> _privilegedConnectionMap = new ConcurrentHashMap<InetSocketAddress, Connection>();
 
     /**
      * Basic RPC call functionality only. Send the request, creating a new

@@ -250,7 +250,7 @@ public class Connection {
 
         // put the request into a map for timeout management
         ChannelPromise timeoutFuture = _channel.newPromise();
-        Integer xid = Integer.valueOf(xdrRequest.getXid());
+        int xid = xdrRequest.getXid();
         _futureMap.put(xid, timeoutFuture);
 
         // put the request into the queue of the netty, netty will send data
