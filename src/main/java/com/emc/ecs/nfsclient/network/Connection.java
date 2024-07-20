@@ -21,11 +21,8 @@ import com.emc.ecs.nfsclient.rpc.Xdr;
 import io.netty.bootstrap.Bootstrap;
 
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.logging.LogLevel;
-import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -166,7 +163,6 @@ public class Connection {
 
             @Override
             protected void initChannel(SocketChannel ch) {
-                ch.pipeline().addLast("Connection", new LoggingHandler(LogLevel.DEBUG));
                 ch.pipeline().addLast(new RPCRecordDecoder());
                 ch.pipeline().addLast(ioHandler);
             }

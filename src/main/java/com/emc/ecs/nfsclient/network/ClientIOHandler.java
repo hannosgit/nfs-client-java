@@ -78,9 +78,8 @@ public class ClientIOHandler extends SimpleChannelInboundHandler<byte[]> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, byte[] msg) throws Exception {
-        byte[] rpcResponse = msg;
         // remove marking
-        Xdr x = RecordMarkingUtil.removeRecordMarking(rpcResponse);
+        Xdr x = RecordMarkingUtil.removeRecordMarking(msg);
         // remove the request from timeout manager map
         int xid = x.getXid();
         _connection.notifySender(xid, x);
