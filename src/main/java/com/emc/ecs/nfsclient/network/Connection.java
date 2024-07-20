@@ -394,10 +394,7 @@ public class Connection {
         System.out.println("Attempting to use privileged port.");
         for (int port = 1023; port > 0; --port) {
             try {
-                Channel channel = _clientBootstrap.config().channelFactory().newChannel();
-                channel.config().setOptions(_clientBootstrap.config().options());
-                _eventLoopGroup.register(channel).awaitUninterruptibly();
-                ChannelFuture bindFuture = channel.bind(new InetSocketAddress(port)).awaitUninterruptibly();
+                ChannelFuture bindFuture = _clientBootstrap.bind(port).awaitUninterruptibly();
                 if (bindFuture.isSuccess()) {
                     System.out.println("Success! Bound to port " + port);
                     return bindFuture.channel();
