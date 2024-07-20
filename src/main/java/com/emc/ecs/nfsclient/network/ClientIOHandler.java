@@ -19,7 +19,7 @@ import com.emc.ecs.nfsclient.rpc.Xdr;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +34,7 @@ import static com.emc.ecs.nfsclient.network.Connection.CONNECTION_OPTION;
  *
  * @author seibed
  */
-public class ClientIOHandler extends ChannelInboundHandlerAdapter {
+public class ClientIOHandler extends SimpleChannelInboundHandler<byte[]> {
 
     /**
      * The usual logger.
@@ -77,15 +77,13 @@ public class ClientIOHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        byte[] rpcResponse = (byte[]) msg;
+    protected void channelRead0(ChannelHandlerContext ctx, byte[] msg) throws Exception {
+        byte[] rpcResponse = msg;
         // remove marking
         Xdr x = RecordMarkingUtil.removeRecordMarking(rpcResponse);
         // remove the request from timeout manager map
         int xid = x.getXid();
         _connection.notifySender(xid, x);
-
-        super.channelRead(ctx, msg);
     }
 
     @Override
