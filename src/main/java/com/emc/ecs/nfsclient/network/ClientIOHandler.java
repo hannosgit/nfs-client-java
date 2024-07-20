@@ -43,11 +43,6 @@ public class ClientIOHandler extends ChannelInboundHandlerAdapter {
     private static final Logger LOG = LoggerFactory.getLogger(ClientIOHandler.class);
 
     /**
-     * The Netty helper class object.
-     */
-    private final Bootstrap _clientBootstrap;
-
-    /**
      * The connection instance
      */
     private final Connection _connection;
@@ -59,7 +54,6 @@ public class ClientIOHandler extends ChannelInboundHandlerAdapter {
      *            A Netty helper instance.
      */
     public ClientIOHandler(Bootstrap bootstrap) {
-        _clientBootstrap = bootstrap;
         _connection = (Connection) bootstrap.config().attrs().get(CONNECTION_OPTION);
     }
 
@@ -74,12 +68,33 @@ public class ClientIOHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         closeConnection("Channel disconnected", ctx);
+        super.channelUnregistered(ctx);
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         closeConnection("Channel closed", ctx);
         super.channelInactive(ctx);
+    }
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        super.channelActive(ctx);
+    }
+
+    @Override
+    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+        super.channelReadComplete(ctx);
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        super.userEventTriggered(ctx, evt);
+    }
+
+    @Override
+    public void channelWritabilityChanged(ChannelHandlerContext ctx) throws Exception {
+        super.channelWritabilityChanged(ctx);
     }
 
     /**
@@ -103,15 +118,15 @@ public class ClientIOHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        byte[] rpcResponse = (byte[]) evt;
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        byte[] rpcResponse = (byte[]) msg;
         // remove marking
         Xdr x = RecordMarkingUtil.removeRecordMarking(rpcResponse);
         // remove the request from timeout manager map
         int xid = x.getXid();
         _connection.notifySender(Integer.valueOf(xid), x);
 
-        super.userEventTriggered(ctx, evt);
+        super.channelRead(ctx, msg);
     }
 
     @Override

@@ -24,6 +24,8 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +81,7 @@ public class Connection {
     /**
      * Netty helper instance.
      */
-    ChannelFuture _channelFuture;
+    ChannelFuture _channelFuture = new DefaultChannelProgressivePromise(null);
 
     /**
      * The remote server address, in any form.
@@ -125,15 +127,14 @@ public class Connection {
     private State _state = State.DISCONNECTED;
 
     /**
-     * @param remoteHost A unique name for the host to which the connection is being made.
-     * @param port The remote host port being used for the connection.
-     * @param usePrivilegedPort
-     *            <ul>
-     *            <li>If <code>true</code>, use a privileged port (below 1024)
-     *            for RPC communication.</li>
-     *            <li>If <code>false</code>, use any non-privileged port for RPC
-     *            communication.</li>
-     *            </ul>
+     * @param remoteHost        A unique name for the host to which the connection is being made.
+     * @param port              The remote host port being used for the connection.
+     * @param usePrivilegedPort <ul>
+     *                                     <li>If <code>true</code>, use a privileged port (below 1024)
+     *                                     for RPC communication.</li>
+     *                                     <li>If <code>false</code>, use any non-privileged port for RPC
+     *                                     communication.</li>
+     *                                     </ul>
      */
     public Connection(String remoteHost, int port, boolean usePrivilegedPort) {
         _remoteHost = remoteHost;
@@ -166,7 +167,9 @@ public class Connection {
 
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
-                ch.pipeline().addLast(new RPCRecordDecoder()).addLast(ioHandler);
+                ch.pipeline().addLast("Connection", new LoggingHandler(LogLevel.DEBUG));
+                ch.pipeline().addLast(new RPCRecordDecoder());
+                ch.pipeline().addLast(ioHandler);
             }
         });
     }
@@ -204,10 +207,8 @@ public class Connection {
      * connection is broken suddenly: (1) the old sendAndWait will get the
      * network error or timeout (2) The new sendAndWait will follow (a).
      *
-     * @param timeout
-     *            The timeout in seconds.
-     * @param xdrRequest
-     *            The generic RPC data and protocol-specific data.
+     * @param timeout    The timeout in seconds.
+     * @param xdrRequest The generic RPC data and protocol-specific data.
      * @return The Xdr data for the response.
      * @throws RpcException
      */
@@ -217,9 +218,9 @@ public class Connection {
         // or there exists a small window that the status is not consistent to
         // the actual tcp connection state.
         // Both above cases will not cause any issues.
-        if (_state.equals(State.CONNECTED) == false) {
+        if (!_state.equals(State.CONNECTED)) {
             _channelFuture.awaitUninterruptibly();
-            if (_channelFuture.isSuccess() == false) {
+            if (!_channelFuture.isSuccess()) {
 
                 String msg = String.format("waiting for connection to be established, but failed %s",
                         getRemoteAddress());
@@ -235,7 +236,7 @@ public class Connection {
         // the request
         // False means that the too many pending requests are in the queue or
         // the connection is closed.
-        if (_channel.isWritable() == false) {
+        if (!_channel.isWritable()) {
             String msg;
             if (_channel.isActive()) {
                 msg = String.format("too many pending requests for the connection: %s", getRemoteAddress());
@@ -262,7 +263,7 @@ public class Connection {
         Xdr response = _responseMap.remove(xid);
         _futureMap.remove(xid);
 
-        if (timeoutFuture.isSuccess() == false) {
+        if (!timeoutFuture.isSuccess()) {
 
             LOG.warn("cause:", timeoutFuture.cause());
 
@@ -383,8 +384,7 @@ public class Connection {
      * privileged, which is dangerous. It is also not generally needed.
      * </p>
      *
-     * @return
-     *         <ul>
+     * @return <ul>
      *         <li><code>true</code> if the binding succeeds,</li>
      *         <li><code>false</code> otherwise.</li>
      *         </ul>

@@ -17,9 +17,6 @@ package com.emc.ecs.nfsclient.network;
 import com.emc.ecs.nfsclient.rpc.RpcException;
 import com.emc.ecs.nfsclient.rpc.Xdr;
 
-import io.netty.channel.ChannelFactory;
-import io.netty.channel.EventLoopGroup;
-
 
 import java.net.InetSocketAddress;
 import java.util.Map;
