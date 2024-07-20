@@ -65,7 +65,7 @@ public class Connection {
      * 512K, it should be split to 512K-size chunks.) the queue size need be
      * 20M.
      */
-    private static final int MAX_SENDING_QUEUE_SIZE = 1 * 1024 * 1024 * 1024;// bytes - total
+    private static final int MAX_SENDING_QUEUE_SIZE = 1024 * 1024 * 1024;// bytes - total
     // 1G
 
     /**
@@ -110,7 +110,7 @@ public class Connection {
     /**
      * Store the Xdr response instances while they are in progress. The map is final, but the content will change.
      */
-    private final ConcurrentHashMap<Integer, Xdr> _responseMap = new ConcurrentHashMap<Integer, Xdr>();
+    private final ConcurrentHashMap<Integer, Xdr> _responseMap = new ConcurrentHashMap<>();
 
     /**
      * Simple enums for communicating connection states.
@@ -118,7 +118,7 @@ public class Connection {
      * @author seibed
      */
     public enum State {
-        DISCONNECTED, CONNECTING, CONNECTED;
+        DISCONNECTED, CONNECTING, CONNECTED
     }
 
     /**
@@ -166,7 +166,7 @@ public class Connection {
             private final ChannelHandler ioHandler = new ClientIOHandler(_clientBootstrap);
 
             @Override
-            protected void initChannel(SocketChannel ch) throws Exception {
+            protected void initChannel(SocketChannel ch) {
                 ch.pipeline().addLast("Connection", new LoggingHandler(LogLevel.DEBUG));
                 ch.pipeline().addLast(new RPCRecordDecoder());
                 ch.pipeline().addLast(ioHandler);
@@ -308,20 +308,18 @@ public class Connection {
         final ChannelConfig config = _channel.config();
         config.setWriteBufferHighWaterMark(MAX_SENDING_QUEUE_SIZE);
 
-        _channelFuture.addListener(new ChannelFutureListener() {
-            /* (non-Javadoc)
-             * @see org.jboss.netty.channel.ChannelFutureListener#operationComplete(org.jboss.netty.channel.ChannelFuture)
-             */
-            public void operationComplete(ChannelFuture future) {
-                if (_channelFuture.isSuccess()) {
-                    _state = State.CONNECTED;
-                    oldChannelFuture.setSuccess();
-                } else {
-                    _state = State.DISCONNECTED;
-                    oldChannelFuture.cancel(false);
-                }
-
+        /* (non-Javadoc)
+         * @see org.jboss.netty.channel.ChannelFutureListener#operationComplete(org.jboss.netty.channel.ChannelFuture)
+         */
+        _channelFuture.addListener((ChannelFutureListener) future -> {
+            if (_channelFuture.isSuccess()) {
+                _state = State.CONNECTED;
+                oldChannelFuture.setSuccess();
+            } else {
+                _state = State.DISCONNECTED;
+                oldChannelFuture.cancel(false);
             }
+
         });
 
     }

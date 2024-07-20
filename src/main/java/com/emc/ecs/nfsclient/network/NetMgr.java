@@ -51,12 +51,12 @@ public class NetMgr {
     /**
      * connection tracking map
      */
-    private final ConcurrentHashMap<InetSocketAddress, Connection> _connectionMap = new ConcurrentHashMap<InetSocketAddress, Connection>();
+    private final ConcurrentHashMap<InetSocketAddress, Connection> _connectionMap = new ConcurrentHashMap<>();
 
     /**
      * privileged connection tracking map
      */
-    private final ConcurrentHashMap<InetSocketAddress, Connection> _privilegedConnectionMap = new ConcurrentHashMap<InetSocketAddress, Connection>();
+    private final ConcurrentHashMap<InetSocketAddress, Connection> _privilegedConnectionMap = new ConcurrentHashMap<>();
 
     /**
      * Basic RPC call functionality only. Send the request, creating a new
