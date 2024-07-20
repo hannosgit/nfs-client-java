@@ -73,8 +73,6 @@ public class Connection {
      */
     private final Bootstrap _clientBootstrap;
 
-    private final NioEventLoopGroup _eventLoopGroup;
-
     /**
      * Netty channel representing a tcp connection.
      */
@@ -143,8 +141,7 @@ public class Connection {
         _port = port;
         _usePrivilegedPort = usePrivilegedPort;
         _clientBootstrap = new Bootstrap();
-        _eventLoopGroup = new NioEventLoopGroup();
-        _clientBootstrap.group(_eventLoopGroup);
+        _clientBootstrap.group(NetMgr.getInstance().getEventLoopGroup());
         _clientBootstrap.channel(NioSocketChannel.class);
         // Configure the client.
         _clientBootstrap.remoteAddress(new InetSocketAddress(_remoteHost, _port));

@@ -16,7 +16,8 @@ package com.emc.ecs.nfsclient.network;
 
 import com.emc.ecs.nfsclient.rpc.RpcException;
 import com.emc.ecs.nfsclient.rpc.Xdr;
-
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 
 import java.net.InetSocketAddress;
 import java.util.Map;
@@ -24,7 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Singleton class to manage all Connection instances
- * 
+ *
  * @author seibed
  */
 public class NetMgr {
@@ -58,10 +59,12 @@ public class NetMgr {
      */
     private final ConcurrentHashMap<InetSocketAddress, Connection> _privilegedConnectionMap = new ConcurrentHashMap<>();
 
+    private final EventLoopGroup eventLoopGroup = new NioEventLoopGroup();
+
     /**
      * Basic RPC call functionality only. Send the request, creating a new
      * connection as necessary, and return the raw Xdr returned.
-     * 
+     *
      * @param serverIP
      *            The endpoint of the server being called.
      * @param port
@@ -96,7 +99,7 @@ public class NetMgr {
 
     /**
      * Remove a dropped connection from the map.
-     * 
+     *
      * @param key
      *            The key
      */
@@ -117,7 +120,11 @@ public class NetMgr {
             connection.shutdown();
         }
 
-//        _factory.releaseExternalResources();
+        eventLoopGroup.shutdownGracefully();
+    }
+
+    public EventLoopGroup getEventLoopGroup(){
+        return eventLoopGroup;
     }
 
 }
