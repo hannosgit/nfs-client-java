@@ -173,7 +173,7 @@ public class RecordMarkingUtil {
 
         ByteBuffer[] outArray = outBuffers.toArray(new ByteBuffer[outBuffers.size()]);
         ByteBuf channelBuffer = wrappedBuffer(outArray);
-        channel.write(channelBuffer);
+        channel.writeAndFlush(channelBuffer);
     }
 
     /**
