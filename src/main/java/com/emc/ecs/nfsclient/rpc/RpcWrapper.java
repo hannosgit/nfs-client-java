@@ -42,6 +42,8 @@ public class RpcWrapper<S extends NfsRequestBase, T extends NfsResponseBase> {
      */
     private static final Logger LOG = LoggerFactory.getLogger(RpcWrapper.class);
 
+    private final NetMgr _netMgr;
+
     /**
      * The remote server being called.
      */
@@ -78,22 +80,18 @@ public class RpcWrapper<S extends NfsRequestBase, T extends NfsResponseBase> {
     private String[] _ips;
 
     /**
-     * @param server
-     *            The remote server being called.
-     * @param port
-     *            The port on the remote server being used for this
-     *            communication.
-     * @param retryWait
-     *            The wait in milliseconds.
-     * @param maximumRetries
-     *            The maximum number of retries.
-     * @param maximumRequestSize
-     *            The maximum request size in bytes.
-     * @param rpcTimeout
-     *            The timeout in seconds.
+     * @param netMgr
+     * @param server             The remote server being called.
+     * @param port               The port on the remote server being used for this
+     *                           communication.
+     * @param retryWait          The wait in milliseconds.
+     * @param maximumRetries     The maximum number of retries.
+     * @param maximumRequestSize The maximum request size in bytes.
+     * @param rpcTimeout         The timeout in seconds.
      */
-    public RpcWrapper(String server, int port, int retryWait, int maximumRetries,
-            int maximumRequestSize, int rpcTimeout) {
+    public RpcWrapper(NetMgr netMgr, String server, int port, int retryWait, int maximumRetries,
+                      int maximumRequestSize, int rpcTimeout) {
+        _netMgr = netMgr;
         _server = server;
         _port = port;
         _retryWait = retryWait;
@@ -225,7 +223,7 @@ public class RpcWrapper<S extends NfsRequestBase, T extends NfsResponseBase> {
      * @throws RpcException
      */
     public Xdr callRpc(String serverIP, Xdr xdrRequest, boolean usePrivilegedPort) throws RpcException {
-        return NetMgr.getInstance().sendAndWait(serverIP, _port, usePrivilegedPort, xdrRequest, _rpcTimeout);
+        return _netMgr.sendAndWait(serverIP, _port, usePrivilegedPort, xdrRequest, _rpcTimeout);
     }
 
     /**

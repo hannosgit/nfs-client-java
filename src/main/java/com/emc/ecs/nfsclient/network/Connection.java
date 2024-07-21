@@ -62,8 +62,9 @@ public class Connection {
      * 512K, it should be split to 512K-size chunks.) the queue size need be
      * 20M.
      */
-    private static final int MAX_SENDING_QUEUE_SIZE = 1024 * 1024 * 1024;// bytes - total
-    // 1G
+    private static final int MAX_SENDING_QUEUE_SIZE = 1024 * 1024 * 1024;
+
+    private final NetMgr _netMgr;
 
     /**
      * Netty helper instance.
@@ -124,21 +125,23 @@ public class Connection {
     private State _state = State.DISCONNECTED;
 
     /**
+     * @param netMgr
      * @param remoteHost        A unique name for the host to which the connection is being made.
      * @param port              The remote host port being used for the connection.
      * @param usePrivilegedPort <ul>
-     *                                     <li>If <code>true</code>, use a privileged port (below 1024)
-     *                                     for RPC communication.</li>
-     *                                     <li>If <code>false</code>, use any non-privileged port for RPC
-     *                                     communication.</li>
-     *                                     </ul>
+     *                          <li>If <code>true</code>, use a privileged port (below 1024)
+     *                          for RPC communication.</li>
+     *                          <li>If <code>false</code>, use any non-privileged port for RPC
+     *                          communication.</li>
+     *                          </ul>
      */
-    public Connection(String remoteHost, int port, boolean usePrivilegedPort) {
+    public Connection(NetMgr netMgr, String remoteHost, int port, boolean usePrivilegedPort) {
+        _netMgr = netMgr;
         _remoteHost = remoteHost;
         _port = port;
         _usePrivilegedPort = usePrivilegedPort;
         _clientBootstrap = new Bootstrap();
-        _clientBootstrap.group(NetMgr.getInstance().getEventLoopGroup());
+        _clientBootstrap.group(_netMgr.getEventLoopGroup());
         _clientBootstrap.channel(NioSocketChannel.class);
         // Configure the client.
         _clientBootstrap.remoteAddress(new InetSocketAddress(_remoteHost, _port));
@@ -337,7 +340,7 @@ public class Connection {
         shutdown();
 
         // remove the connection from map
-        NetMgr.getInstance().dropConnection(InetSocketAddress.createUnresolved(_remoteHost, _port));
+        _netMgr.dropConnection(InetSocketAddress.createUnresolved(_remoteHost, _port));
 
         // notify all the pending requests in the timeout map
         notifyAllPendingSenders("Channel closed, connection closing.");

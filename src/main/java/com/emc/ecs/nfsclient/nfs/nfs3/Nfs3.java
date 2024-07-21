@@ -87,7 +87,7 @@ import java.util.concurrent.locks.ReentrantLock;
  *
  * @author seibed
  */
-public class Nfs3 implements Nfs<Nfs3File> {
+public class Nfs3 implements Nfs<Nfs3File>, AutoCloseable {
 
     /**
      * The usual logger.
@@ -109,6 +109,8 @@ public class Nfs3 implements Nfs<Nfs3File> {
      * The maximum size in bytes. 8K is enough for all requests except for data writing.
      */
     public static final int MAXIMUM_NFS_REQUEST_SIZE = 8 * 1024;
+
+    private final NetMgr _netMgr;
 
     /**
      * The remote NFS server name.
@@ -245,6 +247,7 @@ public class Nfs3 implements Nfs<Nfs3File> {
             throw new IllegalArgumentException("maxRetry must be positive.");
         }
 
+        _netMgr = new NetMgr();
         _server = server;
         _exportedPath = exportedPath;
         _maximumRetries = maximumRetries;
@@ -252,7 +255,7 @@ public class Nfs3 implements Nfs<Nfs3File> {
         if (credential != null) {
             _credential = credential;
         }
-        _rpcWrapper = new RpcWrapper<NfsRequestBase, NfsResponseBase>(_server, _port, _retryWait, _maximumRetries, MAXIMUM_NFS_REQUEST_SIZE, NFS_TIMEOUT);
+        _rpcWrapper = new RpcWrapper<>(_netMgr, _server, _port, _retryWait, _maximumRetries, MAXIMUM_NFS_REQUEST_SIZE, NFS_TIMEOUT);
 
         if (rootFileHandle == null) {
             prepareRootFhAndNfsPort();
@@ -320,7 +323,7 @@ public class Nfs3 implements Nfs<Nfs3File> {
      */
     byte[] lookupRootHandle()
             throws IOException {
-        int portOfMountService = Portmapper.queryPortFromPortMap(MOUNTPROG, VERSION, _server);
+        int portOfMountService = Portmapper.queryPortFromPortMap(_netMgr, MOUNTPROG, VERSION, _server);
 
         MountResponse response = null;
         MountRequest request = new MountRequest(VERSION, _exportedPath, _credential);
@@ -333,7 +336,7 @@ public class Nfs3 implements Nfs<Nfs3File> {
                 if (usePrivilegedPort) {
                     LOG.debug("Mounting with privileged port - attempt with unprivileged failed with an authentication error.");
                 }
-                response.unmarshalling(NetMgr.getInstance().sendAndWait(_server, portOfMountService, usePrivilegedPort, mountXdr, MOUNT_RPC_TIMEOUT));
+                response.unmarshalling(_netMgr.sendAndWait(_server, portOfMountService, usePrivilegedPort, mountXdr, MOUNT_RPC_TIMEOUT));
                 int status = response.getMountStatus();
                 if (status != MountStatus.MNT3_OK.getValue()) {
                     String msg = String.format(
@@ -354,7 +357,7 @@ public class Nfs3 implements Nfs<Nfs3File> {
                 unmountRequest.marshalling(unmountXdr);
                 // RFC defines the response of a unmount request as void
                 // If we mounted with a privileged port, use one to unmount.
-                NetMgr.getInstance().sendAndWait(_server, portOfMountService, usePrivilegedPort, unmountXdr, MOUNT_RPC_TIMEOUT);
+                _netMgr.sendAndWait(_server, portOfMountService, usePrivilegedPort, unmountXdr, MOUNT_RPC_TIMEOUT);
             } catch (RpcException e) {
                 if (i+1 < MOUNT_MAX_RETRIES) {
                     LOG.warn(String.format(
@@ -411,7 +414,7 @@ public class Nfs3 implements Nfs<Nfs3File> {
      * @throws IOException
      */
     private int getNfsPortFromServer() throws IOException {
-        return Portmapper.queryPortFromPortMap(RPC_PROGRAM, VERSION, _server);
+        return Portmapper.queryPortFromPortMap(_netMgr, RPC_PROGRAM, VERSION, _server);
     }
 
     /* (non-Javadoc)
@@ -1431,4 +1434,8 @@ public class Nfs3 implements Nfs<Nfs3File> {
       _rpcWrapper.callRpcWrapped(request, responseHandler, _server);
   }
 
+    @Override
+    public void close() throws IOException {
+        _netMgr.shutdown();
+    }
 }

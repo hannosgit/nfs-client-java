@@ -73,7 +73,7 @@ public class Portmapper {
      *            The server IP address.
      * @return The port number for the program.
      */
-    public static int queryPortFromPortMap(int program, int version, String serverIP) throws IOException {
+    public static int queryPortFromPortMap(NetMgr netMgr,int program, int version, String serverIP) throws IOException {
         GetPortResponse response = null;
         GetPortRequest request = new GetPortRequest(program, version);
         for (int i = 0; i < _maxRetry; ++i) {
@@ -81,7 +81,7 @@ public class Portmapper {
                 Xdr portmapXdr = new Xdr(PORTMAP_MAX_REQUEST_SIZE);
                 request.marshalling(portmapXdr);
 
-                Xdr reply = NetMgr.getInstance().sendAndWait(serverIP, PMAP_PORT, _usePrivilegedPort, portmapXdr,
+                Xdr reply = netMgr.sendAndWait(serverIP, PMAP_PORT, _usePrivilegedPort, portmapXdr,
                         PORTMAP_RPC_TIMEOUT);
 
                 response = new GetPortResponse();
@@ -123,13 +123,6 @@ public class Portmapper {
         }
         throw new IOException(
                 String.format("%s error, server: %s, RPC error: %s", messageStart, server, e.getMessage()), e);
-    }
-
-    /**
-     * Never called.
-     */
-    private Portmapper() {
-        throw new NotImplementedException("No class instances should be needed.");
     }
 
 }

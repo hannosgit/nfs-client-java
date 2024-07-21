@@ -24,28 +24,16 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Singleton class to manage all Connection instances
+ * Class to manage all Connection instances of a client
  *
  * @author seibed
  */
 public class NetMgr {
 
     /**
-     * The single instance.
-     */
-    private static final NetMgr _instance = new NetMgr();
-
-    /**
-     * @return The instance.
-     */
-    public static NetMgr getInstance() {
-        return _instance;
-    }
-
-    /**
      * Construct the private instance.
      */
-    private NetMgr() {
+    public NetMgr() {
         super();
     }
 
@@ -89,7 +77,7 @@ public class NetMgr {
         Map<InetSocketAddress, Connection> connectionMap = usePrivilegedPort ? _privilegedConnectionMap : _connectionMap;
         Connection connection = connectionMap.get(key);
         if (connection == null) {
-            connection = new Connection(serverIP, port, usePrivilegedPort);
+            connection = new Connection(this, serverIP, port, usePrivilegedPort);
             connectionMap.put(key, connection);
             connection.connect();
         }
