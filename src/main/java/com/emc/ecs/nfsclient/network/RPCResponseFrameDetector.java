@@ -1,12 +1,12 @@
 /**
  * Copyright 2016-2018 Dell Inc. or its subsidiaries. All rights reserved.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License").
  * You may not use this file except in compliance with the License.
  * A copy of the License is located at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0.txt
- *
+ * <p>
  * or in the "license" file accompanying this file. This file is distributed
  * on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
  * express or implied. See the License for the specific language governing
@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * To receive the entire response.
  * Just get the size from the packet and then put them in internal buffer until all data arrive.
- * 
+ *
  * @author seibed
  */
 public class RPCResponseFrameDetector extends ByteToMessageDecoder {
@@ -66,11 +66,9 @@ public class RPCResponseFrameDetector extends ByteToMessageDecoder {
             return;
         }
 
-        byte[] rpcResponse = new byte[_recordLength];
-        channelBuffer.readerIndex(channelBuffer.readerIndex() - _recordLength);
-        channelBuffer.readBytes(rpcResponse, 0, _recordLength);
+        ByteBuf result = channelBuffer.copy(channelBuffer.readerIndex() - _recordLength, _recordLength);
 
         _recordLength = 0;
-        out.add(rpcResponse);
+        out.add(result);
     }
 }

@@ -1,17 +1,25 @@
 package com.emc.ecs.nfsclient.network;
 
 import com.emc.ecs.nfsclient.rpc.Xdr;
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.ByteToMessageDecoder;
+
+import java.util.List;
 
 import static com.emc.ecs.nfsclient.network.RecordMarkingUtil.removeRecordMarking;
 
-public class RPCRecordDecoder extends SimpleChannelInboundHandler<byte[]> {
+/**
+ * Decodes {@link ByteBuf} to {@link Xdr}
+ */
+public class RPCRecordDecoder extends ByteToMessageDecoder {
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, byte[] bytes) throws Exception {
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
+        byte[] bytes = new byte[in.readableBytes()];
+        in.readBytes(bytes);
         final Xdr xdr = removeRecordMarking(bytes);
-
-        super.channelRead(ctx, xdr);
+        out.add(xdr);
     }
+
 }
