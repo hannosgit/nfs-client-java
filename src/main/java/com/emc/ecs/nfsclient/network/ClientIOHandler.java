@@ -93,7 +93,7 @@ public class ClientIOHandler extends SimpleChannelInboundHandler<Xdr> {
             return;
         }
 
-        LOG.error("Exception on connection to " + ctx.channel().remoteAddress(), cause);
+        LOG.error("Exception on connection to {}", ctx.channel().remoteAddress(), cause);
 
         // close the channel unless we are connecting and it is
         // NotYetConnectedException
@@ -120,7 +120,7 @@ public class ClientIOHandler extends SimpleChannelInboundHandler<Xdr> {
      * @param ctx
      */
     private void closeConnection(String messageStart, ChannelHandlerContext ctx) {
-        LOG.warn(messageStart + ": {}", ctx.channel().remoteAddress());
+        LOG.warn("{}: {}", messageStart, ctx.channel().remoteAddress());
         _connection.close();
     }
 

@@ -17,10 +17,6 @@ package com.emc.ecs.nfsclient.network;
 import com.emc.ecs.nfsclient.rpc.Xdr;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static io.netty.buffer.Unpooled.wrappedBuffer;
 
 /**
  * RFC1831: RECORD MARKING STANDARD When RPC messages are passed on top of a
@@ -32,10 +28,6 @@ import static io.netty.buffer.Unpooled.wrappedBuffer;
  */
 public class RecordMarkingUtil {
 
-    /**
-     * The usual logger.
-     */
-    private static final Logger LOG = LoggerFactory.getLogger(RecordMarkingUtil.class);
     /**
      * Special constant used for the last fragment size. This is a number bigger
      * than the largest unsigned int, so it cannot be a real fragment size..
