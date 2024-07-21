@@ -167,6 +167,7 @@ public class Connection {
             @Override
             protected void initChannel(SocketChannel ch) {
                 // Inbound - from Server to Client
+                ch.pipeline().addLast(new RPCResponseFrameDetector());
                 ch.pipeline().addLast(new RPCRecordDecoder());
                 ch.pipeline().addLast(ioHandler);
 
@@ -385,9 +386,9 @@ public class Connection {
      * </p>
      *
      * @return <ul>
-     *         <li><code>true</code> if the binding succeeds,</li>
-     *         <li><code>false</code> otherwise.</li>
-     *         </ul>
+     * <li><code>true</code> if the binding succeeds,</li>
+     * <li><code>false</code> otherwise.</li>
+     * </ul>
      * @throws RpcException If an exception occurs, or if no binding succeeds.
      */
     private Channel bindToPrivilegedPort() throws RpcException {

@@ -34,7 +34,7 @@ import static com.emc.ecs.nfsclient.network.Connection.CONNECTION_OPTION;
  *
  * @author seibed
  */
-public class ClientIOHandler extends SimpleChannelInboundHandler<byte[]> {
+public class ClientIOHandler extends SimpleChannelInboundHandler<Xdr> {
 
     /**
      * The usual logger.
@@ -77,9 +77,7 @@ public class ClientIOHandler extends SimpleChannelInboundHandler<byte[]> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, byte[] msg) throws Exception {
-        // remove marking
-        Xdr x = RecordMarkingUtil.removeRecordMarking(msg);
+    protected void channelRead0(ChannelHandlerContext ctx, Xdr x) throws Exception {
         // remove the request from timeout manager map
         int xid = x.getXid();
         _connection.notifySender(xid, x);
