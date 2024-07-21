@@ -166,8 +166,12 @@ public class Connection {
 
             @Override
             protected void initChannel(SocketChannel ch) {
+                // Inbound - from Server to Client
                 ch.pipeline().addLast(new RPCRecordDecoder());
                 ch.pipeline().addLast(ioHandler);
+
+                // Outbound - from Client to Server
+                ch.pipeline().addLast(new RPCRecordEncoder());
             }
         });
     }
@@ -253,7 +257,7 @@ public class Connection {
 
         // put the request into the queue of the netty, netty will send data
         // asynchronously
-        RecordMarkingUtil.putRecordMarkingAndSend(_channel, xdrRequest);
+        _channel.writeAndFlush(xdrRequest);
 
         timeoutFuture.awaitUninterruptibly(timeout, TimeUnit.SECONDS);
 
