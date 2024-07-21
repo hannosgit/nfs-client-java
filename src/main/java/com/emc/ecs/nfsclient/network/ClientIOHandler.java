@@ -29,8 +29,7 @@ import static com.emc.ecs.nfsclient.network.Connection.CONNECTION_OPTION;
 
 /**
  * Each TCP connection has a corresponding ClientIOHandler instance.
- * ClientIOHandler includes the handler to receiving data and connection
- * establishment
+ * ClientIOHandler includes the handler to receiving data and connection establishment
  *
  * @author seibed
  */

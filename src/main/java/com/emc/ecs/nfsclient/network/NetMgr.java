@@ -31,13 +31,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class NetMgr {
 
     /**
-     * Construct the private instance.
-     */
-    public NetMgr() {
-        super();
-    }
-
-    /**
      * connection tracking map
      */
     private final ConcurrentHashMap<InetSocketAddress, Connection> _connectionMap = new ConcurrentHashMap<>();
