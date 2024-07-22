@@ -332,7 +332,13 @@ public class Connection {
      */
     protected void shutdown() {
         if (_channel != null) {
-            _channel.close();
+            final ChannelFuture close = _channel.close();
+            close.awaitUninterruptibly();
+            if (!close.isSuccess()) {
+                System.out.println("Close channel failed");
+            }else{
+                System.out.println("Close channel success");
+            }
         }
     }
 

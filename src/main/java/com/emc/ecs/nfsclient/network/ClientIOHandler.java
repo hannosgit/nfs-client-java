@@ -64,18 +64,6 @@ public class ClientIOHandler extends SimpleChannelInboundHandler<Xdr> {
     }
 
     @Override
-    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
-        closeConnection("Channel disconnected", ctx);
-        super.channelUnregistered(ctx);
-    }
-
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        closeConnection("Channel closed", ctx);
-        super.channelInactive(ctx);
-    }
-
-    @Override
     protected void channelRead0(ChannelHandlerContext ctx, Xdr x) throws Exception {
         // remove the request from timeout manager map
         int xid = x.getXid();
